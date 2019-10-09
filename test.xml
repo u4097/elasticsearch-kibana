@@ -1,0 +1,11 @@
+<xmldata>
+ <head1>
+  <key1>Value1</key1>
+  <key2>Value2</key2>
+  <id>0001</id>
+  <date>01-01-2016 09:00:00</date>
+ </head1>
+ <head2>
+  <key3>Value3</key3>
+ </head2>
+</xmldata>
