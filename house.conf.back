@@ -1,0 +1,62 @@
+input {  
+file 
+{
+    path => "/Volumes/DATA/fias-data-xml/HOUSE-00.XML"
+    start_position => "beginning"
+    sincedb_path => "/tmp/NULL"
+    codec => multiline 
+    {
+        pattern => "<root>"
+        negate => true
+        what => "previous"
+	auto_flush_interval => 1 
+    }
+  }
+}
+
+filter 
+{
+   xml {
+    source => "message"
+    store_xml => false
+    target => "root"
+    xpath =>
+    [
+      "/root/House/@HOUSEID", "ID",
+      "/root/House/@HOUSEGUID", "GUID",
+      "/root/House/@AOGUID", "AOGUID",
+      "/root/House/@HOUSENUM", "HOUSEENUM",
+      "/root/House/@STRSTATUS", "STRSTATUS",
+      "/root/House/@ESTSTATUS", "ESTSTATUS",
+      "/root/House/@STATSTATUS", "STATSTATUS",
+      "/root/House/@IFNSFL", "IFNSFL",
+      "/root/House/@IFNSUL", "IFNSUL",
+      "/root/House/@TERRIFNSFL", "TERRIFNSFL",
+      "/root/House/@TERRIFNSUL", "TERRIFNSUL",
+      "/root/House/@OKATO", "OKATO",
+      "/root/House/@OKTMO", "OKTMO",
+      "/root/House/@POSTALCODE", "POSTALCODE",
+      "/root/House/@STARTDATE", "STARTDATE",
+      "/root/House/@ENDDATE", "ENDDATE",
+      "/root/House/@UPDATEDATE", "UPDATEDATE",
+      "/root/House/@COUNTER", "COUNTER",
+      "/root/House/@DIVTYPE", "DIVTYPE",
+      "/root/House/@REGIONCODE", "REGIONCODE"
+    ]
+   }
+  
+  mutate {
+		remove_field => ["message","@version","@timestamp","host","path","tags"]
+	}
+ }
+
+
+output {
+	elasticsearch {
+		action => "index"
+		hosts => "0.0.0.0:9200"
+		index => "house"
+
+	}
+	stdout {}
+}

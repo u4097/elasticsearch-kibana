@@ -2,4 +2,4 @@
 if [ -f /tmp/NULL ]
   then rm /tmp/NULL
 fi
-logstash -f logstash.conf
+logstash -f $1
