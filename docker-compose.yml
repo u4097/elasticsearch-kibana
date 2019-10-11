@@ -1,55 +1,82 @@
 version: '3.7'
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
-    container_name: es01
-    environment:
-      - node.name=es01
-      - cluster.name=docker-cluster
-      - cluster.initial_master_nodes=es01
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512M -Xmx512M"
-    ulimits:
-      nproc: 65535
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - type: volume
-        source: es-logs-vol
-        target: /var/log
-      - type: volume
-        source: es-data-vol
-        target: /usr/share/elasticsearch/data
-    networks:
-      - net 
-    ports:
-      - 9200:9200
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+      container_name: elasticsearch
+      environment:
+        - node.name=elasticsearch
+        - cluster.name=docker-cluster
+        - discovery.seed_hosts=es02
+        - cluster.initial_master_nodes=elasticsearch,es02
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512M -Xmx512M"
+      ulimits:
+        nproc: 65535
+        memlock:
+          soft: -1
+          hard: -1
+      volumes:
+        - type: volume
+          source: es-data01-vol
+          target: /usr/share/elasticsearch/data
+      networks:
+        - net 
+      ports:
+        - 9200:9200
+  es02:
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+      container_name: es02
+      environment:
+        - node.name=es02
+        - discovery.seed_hosts=elasticsearch
+        - cluster.initial_master_nodes=elasticsearch,es02
+        - cluster.name=docker-cluster
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+      volumes:
+        - type: volume
+          source: es-data02-vol
+          target: /usr/share/elasticsearch/data
+      networks:
+        - net
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.4.0
-    container_name: kibana
-    environment:
-      SERVER_NAME: localhost
-      ELASTICSEARCH_URL: http://es01:9200/
-    ports:
-      - 5601:5601
-    volumes:
-      - type: volume
-        source: kibana-logs-vol
-        target: /var/log
-    ulimits:
-      nproc: 65535
-      memlock:
-        soft: -1
-        hard: -1
-    networks:
-      - net 
+      image: docker.elastic.co/kibana/kibana:7.4.0
+      container_name: kibana
+      environment:
+        SERVER_NAME: localhost
+        ELASTICSEARCH_URL: http://elasticsearch:9200/
+      ports:
+        - 5601:5601
+      ulimits:
+        nproc: 65535
+        memlock:
+          soft: -1
+          hard: -1
+      networks:
+        - net 
+  logstash:
+      image: logstash:7.4.0
+      container_name: logstash
+      links:
+      - elasticsearch
+      volumes:
+      - ./config-dir:/config-dir
+      - ./data:/usr/share/logstash/data-test
+      command: logstash -f /config-dir/logstash.conf --path.data ./data
+      depends_on:
+      - elasticsearch
+      networks:
+        - net 
 
 volumes:
-  es-data-vol:
-  es-logs-vol:
-  kibana-logs-vol:
+  es-data01-vol:
+    driver: local
+  es-data02-vol:
+    driver: local
 
 networks:
    net:
-
