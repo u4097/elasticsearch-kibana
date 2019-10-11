@@ -66,7 +66,8 @@ services:
       volumes:
       - ./config-dir:/config-dir
       - ./data:/usr/share/logstash/data-test
-      command: logstash -f /config-dir/logstash.conf --path.data ./data
+ # command: logstash -f /config-dir/logstash.conf --path.data ./data
+      command: logstash -f /config-dir/house.conf --path.data ./data
       depends_on:
       - elasticsearch
       networks:
