@@ -1,0 +1,32 @@
+input {  
+file 
+{
+    path => "/usr/share/logstash/data-test/ADDROBJ-01.XML"
+    start_position => "beginning"
+    sincedb_path => "/tmp/NULL"
+    exclude => "*.gz"
+  }
+}
+
+filter 
+{
+   xml {
+    source => "message"
+    target => "ADDROBJ"
+    remove_namespaces => true
+   }
+  
+    mutate {
+	remove_field => ["message","@version","@timestamp","host","path","tags"]
+    }
+ }
+
+
+output {
+   elasticsearch {
+	index => "addrobj_04"
+        codec => json
+	hosts => "elasticsearch"
+}
+    stdout { }
+}
