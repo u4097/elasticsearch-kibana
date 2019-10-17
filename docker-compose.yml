@@ -5,10 +5,11 @@ services:
       container_name: elasticsearch
       environment:
         - node.name=elasticsearch
-        - cluster.name=docker-cluster
+        - cluster.name=elasticsearch
         - discovery.seed_hosts=es02
         - cluster.initial_master_nodes=elasticsearch,es02
         - bootstrap.memory_lock=true
+        - transport.host=elasticsearch
         - "ES_JAVA_OPTS=-Xms512M -Xmx512M"
       ulimits:
         nproc: 65535
@@ -16,21 +17,23 @@ services:
           soft: -1
           hard: -1
       volumes:
-        - type: volume
-          source: es-data01-vol
+        - type: volume 
+          source: vol01
           target: /usr/share/elasticsearch/data
       networks:
         - net 
       ports:
         - 9200:9200
+        - 9300:9300
   es02:
       image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
       container_name: es02
       environment:
         - node.name=es02
+        - transport.host=es02
         - discovery.seed_hosts=elasticsearch
         - cluster.initial_master_nodes=elasticsearch,es02
-        - cluster.name=docker-cluster
+        - cluster.name=elasticsearch
         - bootstrap.memory_lock=true
         - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
       ulimits:
@@ -39,10 +42,12 @@ services:
           hard: -1
       volumes:
         - type: volume
-          source: es-data02-vol
+          source: vol02
           target: /usr/share/elasticsearch/data
       networks:
         - net
+      ports:
+        - 9301:9300
   kibana:
       image: docker.elastic.co/kibana/kibana:7.4.0
       container_name: kibana
@@ -66,17 +71,15 @@ services:
       volumes:
       - ./config-dir:/config-dir
       - ./data:/usr/share/logstash/data-test
- # command: logstash -f /config-dir/logstash.conf --path.data ./data
-      command: logstash -f /config-dir/house.conf --path.data ./data
+      command: logstash -f /config-dir/logstash.conf 
       depends_on:
       - elasticsearch
       networks:
         - net 
-
 volumes:
-  es-data01-vol:
+  vol01:
     driver: local
-  es-data02-vol:
+  vol02:
     driver: local
 
 networks:
