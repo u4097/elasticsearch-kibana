@@ -1,0 +1,47 @@
+input {
+  generator {
+    lines => ['
+    <Objects>
+    <Object ACTSTATUS="0" AOGUID="f3380e2d-24d6-47dd-b126-fa24e8819a60" AOID="93ea3f65-4aae-42e9-bbd1-01f97058581b" AOLEVEL="6" AREACODE="000" AUTOCODE="0" CENTSTATUS="0" CITYCODE="001" CTARCODE="000" CURRSTATUS="1" DIVTYPE="0" ENDDATE="2017-02-20" EXTRCODE="0000" FORMALNAME="Деметра" IFNSFL="0105" IFNSUL="0105" LIVESTATUS="0" NEXTID="fe79e123-695d-4d9f-9d43-ff74e6085c93" OFFNAME="Деметра" OKATO="79401000000" OKTMO="79701000" OPERSTATUS="1" PARENTGUID="8cfbe842-e803-49ca-9347-1ef90481dd98" PLACECODE="015" PLAINCODE="01000001015" PLANCODE="0000" REGIONCODE="01" SEXTCODE="000" SHORTNAME="снт" STARTDATE="1900-01-01" STREETCODE="0000" UPDATEDATE="2017-02-21"/>
+  <Object ACTSTATUS="0" AOGUID="aae203a5-5b67-45b1-a7eb-f5beaff9c845" AOID="212bf7e4-b7b9-4e47-b885-032961533564" AOLEVEL="6" AREACODE="000" AUTOCODE="0" CENTSTATUS="0" CITYCODE="001" CTARCODE="000" CURRSTATUS="1" DIVTYPE="0" ENDDATE="2017-02-20" EXTRCODE="0000" FORMALNAME="Яблонька" IFNSFL="0105" IFNSUL="0105" LIVESTATUS="0" NEXTID="c84da0f1-8cb4-493f-a369-3e511e8a3e8b" OFFNAME="Яблонька" OKATO="79401000000" OKTMO="79701000" OPERSTATUS="1" PARENTGUID="8cfbe842-e803-49ca-9347-1ef90481dd98" PLACECODE="048" PLAINCODE="01000001048" PLANCODE="0000" REGIONCODE="01" SEXTCODE="000" SHORTNAME="снт" STARTDATE="1900-01-01" STREETCODE="0000" UPDATEDATE="2017-02-21"/>
+  </Objects>
+']
+    count => 1
+  } 
+} 
+
+filter {
+  xml {
+    source => "message"
+    target => "parsed"
+	xpath => [
+	   "/Objects/Object", "object"
+	]
+}
+
+  mutate {
+    remove_field => ["message","parsed"]
+  }
+
+  split {
+      field => "[object]"
+  }
+
+  xml {
+       source => "object"
+       store_xml => "false"
+       xpath => ["/Object/@FORMALNAME", "formname"]
+  }
+
+  mutate {
+     replace => {
+           "fname" => "%{[formname][0]}"
+     }
+     remove_field => ["formname","object"]
+  }
+
+}
+
+output {
+  stdout { codec => rubydebug }
+}

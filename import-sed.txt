@@ -1,0 +1,15 @@
+FIAS IMPORT
+
+Remove namespace:
+
+cat HOUSE_00.XML | sed -e 's% xmlns:xml_split="http://xmltwig.com/xml_split"%%'  -e 's%xml_split:%%' -e 's%<root>%%' -e 's%</root>%%' -e '/^$/d'  > HOUSE-00.XML
+
+
+cat addrobj_test.xml | sed -e 's% xmlns:xml_split="http://xmltwig.com/xml_split"%%'  -e 's%xml_split:%%'  -e '/^$/d'
+
+
+REMOVE ROOT:
+cat addrobj_test.xml | sed -e 's% xmlns:xml_split="http://xmltwig.com/xml_split"%%'  -e 's%xml_split:%%' -e 's%<root>%%' -e 's%</root>%%' -e '/^$/d'
+
+REMOVE <? xml .. ?>
+sed '1d' ADDR-01.XML > ADDR-001.XML

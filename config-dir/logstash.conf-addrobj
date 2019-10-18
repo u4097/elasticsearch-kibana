@@ -1,0 +1,115 @@
+input {  
+file 
+{
+    path => "/Users/oleg/docker-elk/data/ADDRSIMPLE.XML"
+    start_position => "beginning"
+    sincedb_path => "/tmp/NULL"
+    exclude => "*.gz"
+  }
+}
+
+filter 
+{
+   xml {
+    source => "message"
+    remove_namespaces => true
+    target => "parsed"
+        xpath => [
+           "//Object", "object"
+        ]
+   }
+  
+    mutate {
+	remove_field => ["message",  "@version","@timestamp","host","path","tags"]
+    }
+
+ 
+   xml {
+       source => "object"
+       store_xml => "false"
+       xpath => ["/Object/@ACTSTATUS", "actstatus"]
+       xpath => ["/Object/@AOGUID", "aoguid"]
+       xpath => ["/Object/@AOID", "aoid"]
+       xpath => ["/Object/@AOLEVEL", "aolevel"]
+       xpath => ["/Object/@AREACODE", "areacode"]
+       xpath => ["/Object/@AUTOCODE", "autocode"]
+       xpath => ["/Object/@CENTSTATUS", "centstatus"]
+       xpath => ["/Object/@CITYCODE", "citycode"]
+       xpath => ["/Object/@CODE", "code"]
+       xpath => ["/Object/@CTARCODE", "ctarcode"]
+       xpath => ["/Object/@CURRSTATUS", "currstatus"]
+       xpath => ["/Object/@DIVTYPE", "divtype"]
+       xpath => ["/Object/@ENDDATE", "enddate"]
+       xpath => ["/Object/@EXTRCODE", "extrcode"]
+       xpath => ["/Object/@FORMALNAME", "formname"]
+       xpath => ["/Object/@IFNSFL", "ifnsfl"]
+       xpath => ["/Object/@IFNSUL", "ifnsul"]
+       xpath => ["/Object/@LIVESTATUS", "livestatus"]
+       xpath => ["/Object/@OFFNAME", "offname"]
+       xpath => ["/Object/@OKATO", "okato"]
+       xpath => ["/Object/@OPERSTATUS", "operstatus"]
+       xpath => ["/Object/@PLACECODE", "placecode"]
+       xpath => ["/Object/@PLAINCODE", "plaincode"]
+       xpath => ["/Object/@PLANCODE", "plancode"]
+       xpath => ["/Object/@POSTALCODE", "postalcode"]
+       xpath => ["/Object/@REGIONCODE", "regioncode"]
+       xpath => ["/Object/@SEXTCODE", "sextcode"]
+       xpath => ["/Object/@SHORTNAME", "shortname"]
+       xpath => ["/Object/@STARTDATE", "startdate"]
+       xpath => ["/Object/@STREETCODE", "streetcode"]
+       xpath => ["/Object/@UPDATEDATE", "updatedate"]
+
+  }
+
+  split { field => "[actstatus]"}
+  split { field => "[aoguid]"}
+  split { field => "[aoid]"}
+  split { field => "[aolevel]"}
+  split { field => "[areacode]"}
+  split { field => "[autocode]"}
+  split { field => "[centstatus]"}
+  split { field => "[citycode]"}
+  split { field => "[code]"}
+  split { field => "[ctarcode]"}
+  split { field => "[currstatus]"}
+  split { field => "[divtype]"}
+  split { field => "[enddate]"}
+  split { field => "[extrcode]"}
+  split { field => "[formname]"}
+  split { field => "[ifnsfl]"}
+  split { field => "[ifnsul]"}
+  split { field => "[livestatus]"}
+  split { field => "[offname]"}
+  split { field => "[okato]"}
+  split { field => "[operstatus]"}
+  split { field => "[placecode]"}
+  split { field => "[plaincode]"}
+  split { field => "[plancode]"}
+  split { field => "[postalcode]"}
+  split { field => "[regioncode]"}
+  split { field => "[sextcode]"}
+  split { field => "[shortname]"}
+  split { field => "[startdate]"}
+  split { field => "[streetcode]"}
+  split { field => "[updatedate]"}
+
+
+  mutate {
+         remove_field => ["@version"]
+         remove_field => ["tags"]
+         remove_field => ["@timestamp"]
+         remove_field => ["object"]
+         remove_field => ["parsed"]
+      }
+
+ }
+
+
+output {
+   stdout{codec => rubydebug}
+   elasticsearch {
+	index => "addrobj_001"
+	hosts => "localhost"
+
+   }
+}

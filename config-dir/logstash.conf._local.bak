@@ -1,0 +1,31 @@
+input {  
+file 
+{
+    path => "/Users/oleg/docker-elk/data/ADDROBJ-01.XML"
+    start_position => "beginning"
+    exclude => "*.gz"
+  }
+}
+
+filter 
+{
+   xml {
+    source => "message"
+    target => "ADDROBJ_01"
+    remove_namespaces => true
+   }
+  
+    mutate {
+	remove_field => ["message","@version","@timestamp","host","path","tags"]
+    }
+ }
+
+
+output {
+   elasticsearch {
+	index => "addrobj_001"
+        codec => json
+	hosts => "localhost"
+}
+   stdout{}
+}

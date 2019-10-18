@@ -1,0 +1,55 @@
+input {  
+file 
+{
+    path => "/Users/oleg/docker-elk/data/addrobj_simple.xml"
+    start_position => "beginning"
+    sincedb_path => "/tmp/NULL"
+    exclude => "*.gz"
+  }
+}
+
+filter 
+{
+   xml {
+    source => "message"
+    remove_namespaces => true
+    target => "parsed"
+        xpath => [
+           "//Object", "object"
+        ]
+   }
+  
+    mutate {
+	remove_field => ["message",  "@version","@timestamp","host","path","tags"]
+    }
+
+ 
+   xml {
+       source => "object"
+       store_xml => "false"
+       xpath => ["/Object/@FORMALNAME", "formname"]
+       xpath => ["/Object/@ACTSTATUS", "actstatus"]
+  }
+
+  split { field => "[formname]"}
+  split { field => "[actstatus]"}
+  split { remove_field => "@version" }
+  mutate {
+         remove_field => ["@version"]
+         remove_field => ["tags"]
+         remove_field => ["@timestamp"]
+         remove_field => ["object"]
+         remove_field => ["parsed"]
+      }
+
+ }
+
+
+output {
+   stdout{codec => rubydebug}
+   elasticsearch {
+	index => "addrobj_001"
+	hosts => "localhost"
+
+   }
+}
